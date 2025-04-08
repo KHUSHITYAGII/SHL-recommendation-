@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-04-06T18:03:36.321614",
+  "query": "sales",
+  "recommendations": [
+    {
+      "name": "Sales Reasoning",
+      "url": "https://www.shl.com/solutions/products/sales-reasoning/",
+      "similarity_score": 0.672777938245398
+    }
+  ]
+}

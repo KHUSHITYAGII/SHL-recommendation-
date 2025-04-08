@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-04-06T21:59:26.750662",
+  "query": "python",
+  "recommendations": [
+    {
+      "name": "Python Programming Assessment",
+      "url": "https://example.com/python",
+      "similarity_score": 0.6521653460790101
+    }
+  ]
+}

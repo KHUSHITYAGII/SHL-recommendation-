@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-04-06T18:03:45.875623",
+  "query": "personality",
+  "recommendations": [
+    {
+      "name": "Occupational Personality Questionnaire",
+      "url": "https://www.shl.com/solutions/products/occupational-personality-questionnaire/",
+      "similarity_score": 0.6630788588002087
+    }
+  ]
+}

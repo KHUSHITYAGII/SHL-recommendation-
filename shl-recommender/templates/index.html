@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHL Assessment Recommender</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f6f6f5 0%, #ffd085 100%);
+            min-height: 100vh;
+        }
+        .gradient-text { 
+            background: linear-gradient(to right, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="py-12 px-4 sm:px-6">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold mb-2">
+                <span class="gradient-text">SHL Assessment Recommender</span>
+            </h1>
+            <p class="text-lg text-gray-600">Find the perfect assessment for your career journey</p>
+        </div>
+        
+        <!-- Input Section -->
+        <div class="card p-6 mb-8">
+            <!-- Query Type Selector -->
+            <div class="mb-6">
+                <div class="flex space-x-4">
+                    <button 
+                        id="text-btn"
+                        class="px-4 py-2 rounded-md font-medium transition-colors duration-200 bg-blue-500 text-white">
+                        Text Input
+                    </button>
+                    <button 
+                        id="url-btn"
+                        class="px-4 py-2 rounded-md font-medium transition-colors duration-200 bg-gray-200 text-gray-700">
+                        URL Input
+                    </button>
+                    <button 
+                        id="file-btn"
+                        class="px-4 py-2 rounded-md font-medium transition-colors duration-200 bg-gray-200 text-gray-700">
+                        File Upload
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Text Input -->
+            <div id="text-input" class="mb-4">
+                <textarea 
+                    id="query-text"
+                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="4"
+                    placeholder="Enter job description or keywords..."></textarea>
+            </div>
+            
+            <!-- URL Input -->
+            <div id="url-input" class="mb-4" style="display: none;">
+                <input 
+                    type="url" 
+                    id="query-url"
+                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter job posting URL...">
+            </div>
+            
+            <!-- File Upload -->
+            <div id="file-input" class="mb-4" style="display: none;">
+                <label class="block mb-2 text-sm font-medium text-gray-700">Upload job description file</label>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="flex items-center justify-center w-full">
+                        <label class="flex flex-col w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                            <div class="flex flex-col items-center justify-center pt-7">
+                                <svg class="w-8 h-8 mb-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                <p id="file-name" class="text-sm text-gray-500">Click to upload or drag and drop</p>
+                            </div>
+                            <input 
+                                type="file" 
+                                id="file-upload"
+                                class="hidden" 
+                                accept=".txt,.doc,.docx,.pdf">
+                        </label>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button 
+                    id="search-btn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-md font-medium transition-colors duration-200">
+                    Find Assessments
+                </button>
+            </div>
+        </div>
+        
+        <!-- Error Message -->
+        <div id="error-message" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" style="display: none;" role="alert">
+            <p id="error-text"></p>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading" class="text-center p-4 mb-6" style="display: none;">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <p class="mt-2 text-gray-600">Searching for assessments...</p>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="results" class="card p-6" style="display: none;">
+            <h2 class="text-xl font-semibold mb-4">Recommended Assessments</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assessment Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remote Testing</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adaptive Support</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Similarity</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table" class="bg-white divide-y divide-gray-200">
+                        <!-- Results will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- No Results Message -->
+        <div id="no-results" class="card p-6 text-center" style="display: none;">
+            <p class="text-gray-700">No matching assessments found. Try different keywords or a broader description.</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const textBtn = document.getElementById('text-btn');
+        const urlBtn = document.getElementById('url-btn');
+        const fileBtn = document.getElementById('file-btn');
+        
+        const textInput = document.getElementById('text-input');
+        const urlInput = document.getElementById('url-input');
+        const fileInput = document.getElementById('file-input');
+        
+        const queryText = document.getElementById('query-text');
+        const queryUrl = document.getElementById('query-url');
+        const fileUpload = document.getElementById('file-upload');
+        const fileName = document.getElementById('file-name');
+        
+        const searchBtn = document.getElementById('search-btn');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const noResults = document.getElementById('no-results');
+        const resultsTable = document.getElementById('results-table');
+        
+        // Active query type
+        let activeQueryType = 'text';
+        
+        // Event Listeners for query type buttons
+        textBtn.addEventListener('click', () => {
+            activeQueryType = 'text';
+            textBtn.classList.add('bg-blue-500', 'text-white');
+            textBtn.classList.remove('bg-gray-200', 'text-gray-700');
+            
+            urlBtn.classList.add('bg-gray-200', 'text-gray-700');
+            urlBtn.classList.remove('bg-blue-500', 'text-white');
+            
+            fileBtn.classList.add('bg-gray-200', 'text-gray-700');
+            fileBtn.classList.remove('bg-blue-500', 'text-white');
+            
+            textInput.style.display = 'block';
+            urlInput.style.display = 'none';
+            fileInput.style.display = 'none';
+        });
+        
+        urlBtn.addEventListener('click', () => {
+            activeQueryType = 'url';
+            urlBtn.classList.add('bg-blue-500', 'text-white');
+            urlBtn.classList.remove('bg-gray-200', 'text-gray-700');
+            
+            textBtn.classList.add('bg-gray-200', 'text-gray-700');
+            textBtn.classList.remove('bg-blue-500', 'text-white');
+            
+            fileBtn.classList.add('bg-gray-200', 'text-gray-700');
+            fileBtn.classList.remove('bg-blue-500', 'text-white');
+            
+            textInput.style.display = 'none';
+            urlInput.style.display = 'block';
+            fileInput.style.display = 'none';
+        });
+        
+        fileBtn.addEventListener('click', () => {
+            activeQueryType = 'file';
+            fileBtn.classList.add('bg-blue-500', 'text-white');
+            fileBtn.classList.remove('bg-gray-200', 'text-gray-700');
+            
+            textBtn.classList.add('bg-gray-200', 'text-gray-700');
+            textBtn.classList.remove('bg-blue-500', 'text-white');
+            
+            urlBtn.classList.add('bg-gray-200', 'text-gray-700');
+            urlBtn.classList.remove('bg-blue-500', 'text-white');
+            
+            textInput.style.display = 'none';
+            urlInput.style.display = 'none';
+            fileInput.style.display = 'block';
+        });
+        
+        // File upload event
+        fileUpload.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                fileName.textContent = e.target.files[0].name;
+            } else {
+                fileName.textContent = 'Click to upload or drag and drop';
+            }
+        });
+        
+        // Handle form submission
+        searchBtn.addEventListener('click', () => {
+            // Clear previous errors and results
+            errorMessage.style.display = 'none';
+            results.style.display = 'none';
+            noResults.style.display = 'none';
+            
+            // Show loading
+            loading.style.display = 'block';
+            
+            if (activeQueryType === 'text') {
+                // Text query
+                const text = queryText.value.trim();
+                if (!text) {
+                    showError('Please enter text to search');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('query_type', 'text');
+                formData.append('query_text', text);
+                
+                fetch('/recommend', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => handleResponse(data))
+                .catch(error => showError(`Error: ${error.message}`));
+                
+            } else if (activeQueryType === 'url') {
+                // URL query
+                const url = queryUrl.value.trim();
+                if (!url) {
+                    showError('Please enter a URL');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('query_type', 'url');
+                formData.append('query_url', url);
+                
+                fetch('/recommend', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => handleResponse(data))
+                .catch(error => showError(`Error: ${error.message}`));
+                
+            } else if (activeQueryType === 'file') {
+                // File upload
+                const file = fileUpload.files[0];
+                if (!file) {
+                    showError('Please select a file');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => handleResponse(data))
+                .catch(error => showError(`Error: ${error.message}`));
+            }
+        });
+        
+        // Handle API response
+        function handleResponse(data) {
+            // Hide loading
+            loading.style.display = 'none';
+            
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+            
+            if (!data.assessments || data.assessments.length === 0) {
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            // Display results
+            resultsTable.innerHTML = '';
+            data.assessments.forEach(assessment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="${assessment.url}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium">${assessment.name}</a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">${assessment.remote_testing}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${assessment.adaptive_support}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${assessment.similarity}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="${assessment.url}" target="_blank" class="text-blue-600 hover:text-blue-800">Explore</a>
+                    </td>
+                `;
+                resultsTable.appendChild(row);
+            });
+            
+            results.style.display = 'block';
+        }
+        
+        // Show error message
+        function showError(message) {
+            loading.style.display = 'none';
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
